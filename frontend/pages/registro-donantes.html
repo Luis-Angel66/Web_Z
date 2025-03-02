@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Donantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">Donaciones</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="registro-beneficiarios.html">Beneficiarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="registro-donantes.html">Donantes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="registro-alimentos.html">Registrar Alimentos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="productos.html">Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="gestion.html">Gestión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-5">
+        <h2 class="text-center">Registro de Donantes</h2>
+        <form id="formRegistroDonante" class="mt-4">
+            <!-- Tipo de Donante -->
+            <div class="mb-3">
+                <label for="tipoDonante" class="form-label">Tipo de Donante</label>
+                <select class="form-select" id="tipoDonante" required>
+                    <option value="" selected disabled>Seleccione una opción</option>
+                    <option value="mercado">Mercado</option>
+                    <option value="local">Local de comida fuera de mercado</option>
+                </select>
+            </div>
+
+            <!-- Campos para Mercado -->
+            <div id="formMercado" class="d-none">
+                <div class="mb-3">
+                    <label for="nombreMercado" class="form-label">Nombre del Mercado</label>
+                    <input type="text" class="form-control" id="nombreMercado">
+                </div>
+                <div class="mb-3">
+                    <label for="rfcMercado" class="form-label">RFC</label>
+                    <input type="text" class="form-control" id="rfcMercado">
+                </div>
+                <div class="mb-3">
+                    <label for="numLocales" class="form-label">Número de Locales</label>
+                    <input type="number" class="form-control" id="numLocales">
+                </div>
+                <div class="mb-3">
+                    <label for="adminMercado" class="form-label">Nombre del Administrador</label>
+                    <input type="text" class="form-control" id="adminMercado">
+                </div>
+                <div class="mb-3">
+                    <label for="correoAdmin" class="form-label">Correo Electrónico del Administrador</label>
+                    <input type="email" class="form-control" id="correoAdmin">
+                </div>
+            </div>
+
+            <!-- Campos para Local de Comida -->
+            <div id="formLocal" class="d-none">
+                <div class="mb-3">
+                    <label for="nombreLocal" class="form-label">Nombre del Negocio</label>
+                    <input type="text" class="form-control" id="nombreLocal">
+                </div>
+                <div class="mb-3">
+                    <label for="rfcLocal" class="form-label">RFC del Restaurante</label>
+                    <input type="text" class="form-control" id="rfcLocal">
+                </div>
+                <div class="mb-3">
+                    <label for="folioActa" class="form-label">Folio de Acta Constitutiva</label>
+                    <input type="text" class="form-control" id="folioActa">
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <button type="submit" class="btn btn-primary">Registrar</button>
+            <a href="../index.html" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/scripts.js"></script>
+</body>
+</html>

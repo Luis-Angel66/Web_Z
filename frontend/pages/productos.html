@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos Disponibles</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">Donaciones</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="registro-beneficiarios.html">Beneficiarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="registro-donantes.html">Donantes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="registro-alimentos.html">Registrar Alimentos</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="productos.html">Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="gestion.html">Gestión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-5">
+        <h2 class="text-center">Productos Disponibles</h2>
+        <p class="text-center">Aquí puedes ver los alimentos disponibles para donación o compra.</p>
+
+        <!-- Cards de productos -->
+        <div class="row" id="productosContainer">
+            <!-- Los productos se insertarán aquí dinámicamente con JS -->
+        </div>
+
+        <!-- Tabla de productos -->
+        <h3 class="mt-5">Listado Completo</h3>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Disponibilidad</th>
+                    <th>Precio</th>
+                    <th>Donante</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="productosTabla">
+                <!-- Los productos se insertarán aquí dinámicamente con JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/scripts.js"></script>
+</body>
+</html>
