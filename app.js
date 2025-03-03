@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import indexRoutes from './src/routes/index.js'
-
+import conn from './src/config/database.js'
 // 🛠️ Solución para __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
