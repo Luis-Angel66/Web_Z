@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import authRoutes from './src/routes/authRoutes.js'
 import indexRoutes from './src/routes/index.js'
 import conn from './src/config/database.js'
 // 🛠️ Solución para __dirname en ES Modules
@@ -12,9 +13,10 @@ const PORT = process.env.PORT || 3000;
 
 // Configurar carpeta de vistas estáticas
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // Rutas
-app.use('/', indexRoutes);
+app.use('/api', authRoutes);
 
 
 
