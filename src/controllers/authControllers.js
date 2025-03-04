@@ -160,15 +160,20 @@ const login = async (req, res) => {
 const obtenerRegistros = async (req, res) => {
     try {
         const registros = await conn.query(
-            `SELECT id, nombre, correo, 'ciudadano' AS tipo FROM beneficiarios WHERE id_tipo = 1
+            `SELECT id, nombre, correo, calle, colonia, alcaldia, 'ciudadano' AS tipo 
+             FROM beneficiarios WHERE id_tipo = 1
             UNION ALL
-            SELECT id, nombre, correo, 'institucion' AS tipo FROM beneficiarios WHERE id_tipo = 2
+            SELECT id, nombre, correo, calle, colonia, alcaldia, 'institucion' AS tipo 
+             FROM beneficiarios WHERE id_tipo = 2
             UNION ALL
-            SELECT id, nombre, correo, 'restaurante' AS tipo FROM beneficiarios WHERE id_tipo = 3
+            SELECT id, nombre, rfc AS correo, NULL AS calle, NULL AS colonia, NULL AS alcaldia, 'restaurante' AS tipo 
+             FROM donantes WHERE id_tipo = 3
             UNION ALL
-            SELECT id, nombre, correo, 'local' AS tipo FROM beneficiarios WHERE id_tipo = 4`,
+            SELECT id, nombre, rfc AS correo, NULL AS calle, NULL AS colonia, NULL AS alcaldia, 'local' AS tipo 
+             FROM donantes WHERE id_tipo = 4`,
             { type: Sequelize.QueryTypes.SELECT }
         );
+
         res.json(registros);
     } catch (error) {
         console.error('Error al obtener registros:', error);
@@ -176,39 +181,55 @@ const obtenerRegistros = async (req, res) => {
     }
 };
 
+
 const eliminarRegistro = async (req, res) => {
     const { tipo, id } = req.params;
 
     let tabla;
+    let columnaId; // Columna que se usará en la condición WHERE
+
     switch (tipo) {
         case 'ciudadano':
             tabla = 'ciudadano';
+            columnaId = 'beneficiario_id';
             break;
         case 'institucion':
             tabla = 'instituciones';
+            columnaId = 'beneficiario_id';
             break;
         case 'restaurante':
-            tabla = 'restaurantes';
+            tabla = 'mercados';
+            columnaId = 'id_donantes';
             break;
         case 'local':
             tabla = 'locales';
+            columnaId = 'id_donantes';
             break;
         default:
             return res.status(400).json({ message: 'Tipo de registro no válido' });
     }
 
     try {
-        
-        await conn.query(`DELETE FROM ${tabla} WHERE beneficiario_id = ?`, {
+        // Eliminar primero de la tabla específica
+        await conn.query(`DELETE FROM ${tabla} WHERE ${columnaId} = ?`, {
             replacements: [id],
             type: Sequelize.QueryTypes.DELETE
         });
 
         
-        await conn.query(`DELETE FROM beneficiarios WHERE id = ?`, {
-            replacements: [id],
-            type: Sequelize.QueryTypes.DELETE
-        });
+        if (columnaId === 'beneficiario_id') {
+            await conn.query(`DELETE FROM beneficiarios WHERE id = ?`, {
+                replacements: [id],
+                type: Sequelize.QueryTypes.DELETE
+            });
+        }
+
+        if (columnaId === 'id_donantes') {
+            await conn.query(`DELETE FROM donantes WHERE id = ?`, {
+                replacements: [id],
+                type: Sequelize.QueryTypes.DELETE
+            });
+        }
 
         res.status(200).json({ message: `${tipo} eliminado correctamente` });
     } catch (error) {
@@ -216,6 +237,7 @@ const eliminarRegistro = async (req, res) => {
         res.status(500).json({ message: 'Error al eliminar el registro' });
     }
 };
+
 
 
 const editarRegistro = async (req, res) => {
@@ -230,8 +252,8 @@ const editarRegistro = async (req, res) => {
         case 'institucion':
             tabla = 'instituciones';
             break;
-        case 'restaurante':
-            tabla = 'restaurantes';
+        case 'mercados':
+            tabla = 'mercados';
             break;
         case 'local':
             tabla = 'locales';
@@ -241,7 +263,6 @@ const editarRegistro = async (req, res) => {
     }
 
     try {
-        // Actualizar el beneficiario en la tabla principal
         await conn.query(
             `UPDATE beneficiarios SET nombre = ?, correo = ?, calle = ?, colonia = ?, alcaldia = ? WHERE id = ?`,
             {
@@ -270,9 +291,9 @@ const registrarDonante = async (req, res) => {
         try {
             let id_tipo;
             if (tipo === "mercado") {
-                id_tipo = 1;
+                id_tipo = 3;
             } else if (tipo === "local") {
-                id_tipo = 2;
+                id_tipo = 4;
             } else {
                 return res.status(400).json({ message: "Tipo de donante no válido." });
             }
@@ -331,6 +352,89 @@ const registrarDonante = async (req, res) => {
     }
 };
 
+const registrarAlimento = async (req, res) => {
+    const { nombre, tipo, donacionVenta, precio, cantidad, unidad, fechaCaducidad, idDonante } = req.body;
 
+    // Validación de datos obligatorios
+    if (!nombre || !tipo || !donacionVenta || !fechaCaducidad || !idDonante) {
+        return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
 
-export default { beneficiarioCiudadano, beneficiarioInstitucion,login,obtenerRegistros,eliminarRegistro,editarRegistro,registrarDonante };
+    try {
+        // Verificar si el donante existe
+        const [donante] = await conn.query(
+            `SELECT id FROM donantes WHERE id = ?`,
+            { replacements: [idDonante], type: Sequelize.QueryTypes.SELECT }
+        );
+
+        if (!donante) {
+            return res.status(404).json({ message: "El donante seleccionado no existe" });
+        }
+
+        // Iniciar transacción
+        const t = await conn.transaction();
+
+        try {
+            // Insertar el alimento
+            await conn.query(
+                `INSERT INTO alimentos (id_donante,nombre, tipo, modalidad, precio, cantidad, unidad, fecha_caducidad) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                {
+                    replacements: [
+                        idDonante,
+                        nombre,
+                        tipo,
+                        donacionVenta,
+                        donacionVenta === "vendido" ? precio : null,
+                        donacionVenta === "vendido" ? cantidad : null,
+                        donacionVenta === "vendido" ? unidad : null,
+                        fechaCaducidad
+                        
+                    ],
+                    type: Sequelize.QueryTypes.INSERT,
+                    transaction: t
+                }
+            );
+
+            await t.commit();
+            res.status(201).json({ message: "Alimento registrado exitosamente" });
+        } catch (error) {
+            await t.rollback();
+            console.error("Error al registrar el alimento:", error);
+            res.status(500).json({ message: "Error al registrar el alimento" });
+        }
+    } catch (err) {
+        console.error("Error en la base de datos:", err);
+        res.status(500).json({ message: "Error interno del servidor" });
+    }
+};
+
+const obtenerAlimentos = async (req, res) => {
+    try {
+        const alimentos = await conn.query(
+            `SELECT a.id, a.nombre, a.tipo, a.modalidad, a.precio, a.cantidad, a.unidad, a.fecha_caducidad, d.nombre AS donante 
+             FROM alimentos a
+             JOIN donantes d ON a.id_donante = d.id`,
+            { type: Sequelize.QueryTypes.SELECT }
+        );
+        res.json(alimentos);
+    } catch (error) {
+        console.error("Error al obtener alimentos:", error);
+        res.status(500).json({ message: "Error en el servidor" });
+    }
+};
+
+const obtenerDonantes = async (req, res) => {
+    try {
+        const donantes = await conn.query(
+            `SELECT id, nombre FROM donantes`,
+            { type: Sequelize.QueryTypes.SELECT }
+        );
+        res.json(donantes);
+    } catch (error) {
+        console.error("Error al obtener donantes:", error);
+        res.status(500).json({ message: "Error en el servidor" });
+    }
+};
+
+export default { beneficiarioCiudadano, beneficiarioInstitucion,login,obtenerRegistros,eliminarRegistro,editarRegistro,registrarDonante, registrarAlimento,obtenerAlimentos,obtenerDonantes };
