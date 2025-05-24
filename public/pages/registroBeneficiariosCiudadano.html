@@ -1,0 +1,76 @@
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro Ciudadano</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2 class="text-center">Registro de Ciudadano</h2>
+      <form id="formCiudadano" class="mt-4">
+        <input type="hidden" id="tipo" value="ciudadano" />
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input type="text" class="form-control" id="nombre" required />
+        </div>
+        <div class="mb-3">
+          <label for="correo" class="form-label">Correo Electrónico</label>
+          <input type="email" class="form-control" id="correo" required />
+        </div>
+        <div class="mb-3">
+          <label for="calle" class="form-label">Calle</label>
+          <input type="text" class="form-control" id="calle" required />
+        </div>
+        <div class="mb-3">
+          <label for="colonia" class="form-label">Colonia</label>
+          <input type="text" class="form-control" id="colonia" required />
+        </div>
+        <div class="mb-3">
+          <label for="alcaldia" class="form-label">Alcaldía</label>
+          <input type="text" class="form-control" id="alcaldia" required />
+        </div>
+        <div class="mb-3">
+          <label for="ine" class="form-label">Número de INE</label>
+          <input type="text" class="form-control" id="ine" required />
+        </div>
+        <div class="mb-3">
+          <label for="contrasena" class="form-label">Contraseña</label>
+          <input
+            type="password"
+            class="form-control"
+            id="contrasena"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar</button>
+        <a href="../index.html" class="btn btn-secondary">Cancelar</a>
+      </form>
+    </div>
+  </body>
+</html>
+
+<!-- JS recomendado para los formularios -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const selects = document.querySelectorAll("select");
+    selects.forEach((select) =>
+      select.addEventListener("change", () =>
+        console.log(`${select.id}: ${select.value}`)
+      )
+    );
+
+    const formularios = document.querySelectorAll("form");
+    formularios.forEach((form) => {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        alert(
+          "Formulario enviado (simulado). Aquí se enviaría la data a una API/backend."
+        );
+      });
+    });
+  });
+</script>
