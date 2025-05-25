@@ -52,25 +52,4 @@
     </div>
   </body>
 </html>
-
-<!-- JS recomendado para los formularios -->
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const selects = document.querySelectorAll("select");
-    selects.forEach((select) =>
-      select.addEventListener("change", () =>
-        console.log(`${select.id}: ${select.value}`)
-      )
-    );
-
-    const formularios = document.querySelectorAll("form");
-    formularios.forEach((form) => {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        alert(
-          "Formulario enviado (simulado). Aquí se enviaría la data a una API/backend."
-        );
-      });
-    });
-  });
-</script>
+<script src="../js/formCiudadano.js"></script>

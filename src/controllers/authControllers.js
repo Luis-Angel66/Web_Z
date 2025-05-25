@@ -1,51 +1,50 @@
 import { Sequelize } from 'sequelize';
 import conn from '../config/database.js'; 
-
+import bcrypt from 'bcrypt';
+import {insertarBeneficiario, 
+    insertarCiudadano, 
+    insertarUsuario,
+    insertarInstitucion,
+    insertarDonante,
+    insertarLocal} from './modelos.js'; // Asegúrate de que la ruta sea correcta
 const beneficiarioCiudadano = async (req, res) => {
-    const { nombre, contrasena, correo, calle, colonia, alcaldia, numINE } = req.body;
+    const { nombreCiudadano, passwordCiudadano , correoCiudadano, calleCiudadano, coloniaCiudadano, alcaldiaCiudadano, ineCiudadano } = req.body;
    
     // Validación de los datos
-    if (!nombre || !contrasena || !correo || !calle || !colonia || !alcaldia || !numINE) {
+    if (!nombreCiudadano || !passwordCiudadano  || !correoCiudadano || !calleCiudadano || !coloniaCiudadano || !alcaldiaCiudadano || !ineCiudadano) {
         return res.status(400).json({ message: 'Faltan datos' });
     }
+    const tipoUsuario = "beneficiario"; 
+    const tipoBeneficiario = "ciudadano"; 
+    const estatus = 1; 
+    const t = await conn.transaction();
+
 
     try {
-        
-        const idTipo = 1; // Tipo de beneficiario (1 = Ciudadano)
-        const estatus = 1; 
+            // Encriptar la contraseña
+            const passwordEncriptada = await bcrypt.hash(passwordCiudadano, 10);  
+            const usuario = await insertarUsuario({
+                correo:correoCiudadano, 
+                tipo_usuario:tipoUsuario, 
+                password:passwordEncriptada}, t);
+            const usuario_id = usuario.id; 
 
-        // Iniciar la transacción
-        const t = await conn.transaction();
+            const beneficiario = await insertarBeneficiario({
+                usuario_id, 
+                tipoBeneficiario    }, t);
 
-        try {
-           
-            const [beneficiario] = await conn.query(
-                `INSERT INTO beneficiarios (id_tipo, nombre, contrasena, correo, calle, colonia, alcaldia, estatus) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                {
-                    replacements: [idTipo, nombre, contrasena, correo, calle, colonia, alcaldia, estatus],
-                    type: Sequelize.QueryTypes.INSERT,
-                    transaction: t
-                }
-            );
+            const beneficiario_id = beneficiario.id;
+            await insertarCiudadano({
+                beneficiario_id,
+                nombre:nombreCiudadano,
+                calle:calleCiudadano,
+                colonia:coloniaCiudadano,
+                alcaldia:alcaldiaCiudadano,
+                numINE:ineCiudadano
+            }, t);
 
-           
-            const beneficiario_id = beneficiario; 
-
-         
-            await conn.query(
-                `INSERT INTO ciudadano (beneficiario_id, numero_identificacion) 
-                 VALUES (?, ?)`,
-                {
-                    replacements: [beneficiario_id, numINE],
-                    type: Sequelize.QueryTypes.INSERT,
-                    transaction: t
-                }
-            );
-
-           
             await t.commit();
-
+            
             res.status(201).json({ message: 'Ciudadano registrado exitosamente' });
         } catch (error) {
             
@@ -53,71 +52,67 @@ const beneficiarioCiudadano = async (req, res) => {
             console.error('Error al registrar el ciudadano:', error);
             res.status(500).json({ message: 'Error al registrar al ciudadano' });
         }
-    } catch (err) {
-        console.error('Error al encriptar la contraseña:', err);
-        res.status(500).json({ message: 'Error al registrar al ciudadano' });
-    }
+    
 };
+export const beneficiarioInstitucion = async (req, res) => {
+  const {
+    nombre,
+    contrasena,
+    correo,
+    calle,
+    colonia,
+    alcaldia,
+    rfc,
+    folio_acta,
+    nombre_contacto
+  } = req.body;
 
-const beneficiarioInstitucion = async (req, res) => {
-    const { nombre, contrasena, correo, calle, colonia, alcaldia, rfc, folio_acta, nombre_contacto } = req.body;
+  // Validación de campos
+  if (!nombre || !contrasena || !correo || !calle || !colonia || !alcaldia || !rfc || !folio_acta || !nombre_contacto) {
+    return res.status(400).json({ message: 'Faltan datos para registrar la institución.' });
+  }
 
-    // Validación de datos
-    if (!nombre || !contrasena || !correo || !calle || !colonia || !alcaldia || !rfc || !folio_acta || !nombre_contacto) {
-        return res.status(400).json({ message: 'Faltan datos para registrar la institución.' });
-    }
+  const estatus = 1;
+  const tipoUsuario = "beneficiario"; 
+  const tipoBeneficiario = "institucion"; 
 
-    try {
-        const idTipo = 2; // Tipo de beneficiario (2 = Institución)
-        const estatus = 1; // 1 = Activo
+  const t = await conn.transaction();
 
-        // Iniciar transacción
-        const t = await conn.transaction();
+  try {
+    // Encriptar la contraseña
+    const contrasenaEncriptada = await bcrypt.hash(contrasena, 10);
+    const usuario = await insertarUsuario({
+        correo,
+        tipo_usuario: tipoUsuario,
+        password: contrasenaEncriptada
+    }, t);
+    const usuario_id = usuario.id; // Obtener el ID del usuario recién insertado
+    // Insertar beneficiario
+    const beneficiario = await insertarBeneficiario({
+        usuario_id,
+        tipoBeneficiario
+    }, t);
 
-        try {
-            
-            await conn.query(
-                `INSERT INTO beneficiarios (id_tipo, nombre, contrasena, correo, calle, colonia, alcaldia, estatus) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                {
-                    replacements: [idTipo, nombre, contrasena, correo, calle, colonia, alcaldia, estatus],
-                    type: Sequelize.QueryTypes.INSERT,
-                    transaction: t
-                }
-            );
+    // Insertar institución con el ID del beneficiario
+    await insertarInstitucion({
+      beneficiario_id: beneficiario.id,
+      nombre,
+      rfc,
+      folio_acta,
+      calle,  
+      colonia,
+      alcaldia,
+      nombre_contacto
+      
+    }, t);
 
-            // Obtener el ID recién insertado
-            const [beneficiarioId] = await conn.query(`SELECT LAST_INSERT_ID() AS id`, {
-                type: Sequelize.QueryTypes.SELECT,
-                transaction: t
-            });
-
-            const beneficiario_id = beneficiarioId.id;
-
-            // Insertar la institución con el beneficiario_id obtenido
-            await conn.query(
-                `INSERT INTO instituciones (beneficiario_id, rfc, folio_acta, nombre_contacto) 
-                 VALUES (?, ?, ?, ?)`,
-                {
-                    replacements: [beneficiario_id, rfc, folio_acta, nombre_contacto],
-                    type: Sequelize.QueryTypes.INSERT,
-                    transaction: t
-                }
-            );
-
-            await t.commit();
-
-            res.status(201).json({ message: 'Institución registrada exitosamente' });
-        } catch (error) {
-            // Revertir la transacción si hay error
-            await t.rollback();
-            console.error('Error al registrar la institución:', error);
-            res.status(500).json({ message: 'Error al registrar la institución' });
-        }
-    } catch (err) {
-        console.error('Error al procesar la solicitud:', err);
-        res.status(500).json({ message: 'Error al registrar la institución' });
-    }
+    await t.commit();
+    res.status(201).json({ message: 'Institución registrada exitosamente' });
+  } catch (error) {
+    await t.rollback();
+    console.error('Error al registrar la institución:', error);
+    res.status(500).json({ message: 'Error al registrar la institución' });
+  }
 };
 
 
@@ -277,81 +272,61 @@ const editarRegistro = async (req, res) => {
         res.status(500).json({ message: 'Error al actualizar el registro' });
     }
 };
+const registrarLocal = async (req, res) => {
+  const {
+    correo,
+    contrasena,
+    nombre_negocio,
+    numero_local,
+    giro,
+    tipo_local,
+    cedula_folio,
+    rfc,
+    id_mercado
+  } = req.body;
 
-const registrarDonante = async (req, res) => {
-    const { tipo, nombre, rfc, numLocales, administrador, correoAdmin, folioActa } = req.body;
+  if (!correo || !contrasena || !nombre_negocio || !rfc || !id_mercado) {
+    return res.status(400).json({ message: "Faltan datos obligatorios." });
+  }
+  const tipoUsuario = "donante"; 
+  const tipoDonante = "local";
+  const t = await conn.transaction();
 
-    if (!nombre || !rfc) {
-        return res.status(400).json({ message: "Faltan datos obligatorios." });
-    }
+  try {
+    const hash = await bcrypt.hash(contrasena, 10);
 
-    try {
-        const t = await conn.transaction();
+    const usuario = await insertarUsuario({
+        correo,
+        tipo_usuario: tipoUsuario,
+        password: hash
+    }, t);
+    const usuario_id = usuario.id;
+    const donante = await insertarDonante({
+        usuario_id,
+        tipoDonante,
+    },t);
+    const donante_id = donante.id;
+   
+    await insertarLocal(
+      donante_id,
+      nombre_negocio,
+      numero_local,
+      giro,
+      tipo_local,
+      cedula_folio,
+      id_mercado,
+        rfc,
+      t
+    );
 
-        try {
-            let id_tipo;
-            if (tipo === "mercado") {
-                id_tipo = 3;
-            } else if (tipo === "local") {
-                id_tipo = 4;
-            } else {
-                return res.status(400).json({ message: "Tipo de donante no válido." });
-            }
-
-            // Insertar en la tabla donantes
-            await conn.query(
-                `INSERT INTO donantes (id_tipo, nombre, rfc) VALUES (?, ?, ?)`,
-                {
-                    replacements: [id_tipo, nombre, rfc],
-                    type: Sequelize.QueryTypes.INSERT,
-                    transaction: t
-                }
-            );
-
-            // Obtener el ID del donante recién insertado
-            const [donanteId] = await conn.query(`SELECT LAST_INSERT_ID() AS id`, {
-                type: Sequelize.QueryTypes.SELECT,
-                transaction: t
-            });
-
-            const donante_id = donanteId.id;
-
-            // Insertar en la tabla correspondiente según el tipo
-            if (tipo === "mercado") {
-                await conn.query(
-                    `INSERT INTO mercados (id_donantes, numero_locales, administrador, correo_administrador) 
-                     VALUES (?, ?, ?, ?)`,
-                    {
-                        replacements: [donante_id, numLocales, administrador, correoAdmin],
-                        type: Sequelize.QueryTypes.INSERT,
-                        transaction: t
-                    }
-                );
-            } else if (tipo === "local") {
-                await conn.query(
-                    `INSERT INTO locales (id_donantes, folio_acta) 
-                     VALUES (?, ?)`,
-                    {
-                        replacements: [donante_id, folioActa],
-                        type: Sequelize.QueryTypes.INSERT,
-                        transaction: t
-                    }
-                );
-            }
-
-            await t.commit();
-            res.status(201).json({ message: "Donante registrado exitosamente" });
-        } catch (error) {
-            await t.rollback();
-            console.error("Error al registrar el donante:", error);
-            res.status(500).json({ message: "Error al registrar el donante." });
-        }
-    } catch (err) {
-        console.error("Error en la base de datos:", err);
-        res.status(500).json({ message: "Error interno del servidor." });
-    }
+    await t.commit();
+    res.status(201).json({ message: "Donante local registrado exitosamente" });
+  } catch (error) {
+    await t.rollback();
+    console.error("Error al registrar el donante:", error);
+    res.status(500).json({ message: "Error al registrar el donante local." });
+  }
 };
-
 const registrarAlimento = async (req, res) => {
     const { nombre, tipo, donacionVenta, precio, cantidad, unidad, fechaCaducidad, idDonante } = req.body;
 
@@ -437,4 +412,4 @@ const obtenerDonantes = async (req, res) => {
     }
 };
 
-export default { beneficiarioCiudadano, beneficiarioInstitucion,login,obtenerRegistros,eliminarRegistro,editarRegistro,registrarDonante, registrarAlimento,obtenerAlimentos,obtenerDonantes };
+export default { beneficiarioCiudadano, beneficiarioInstitucion,login,obtenerRegistros,eliminarRegistro,editarRegistro,registrarLocal, registrarAlimento,obtenerAlimentos,obtenerDonantes };

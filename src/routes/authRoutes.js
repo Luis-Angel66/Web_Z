@@ -9,9 +9,8 @@ router.post('/login', authControllers.login);
 router.get('/registros', authControllers.obtenerRegistros);
 router.delete('/:tipo/:id', authControllers.eliminarRegistro);
 router.put('/editar/:tipo/:id', authControllers.editarRegistro); 
-router.post('/donantes', authControllers.registrarDonante);
 router.post('/alimentos/registrar', authControllers.registrarAlimento);
 router.get('/alimentos/listar', authControllers.obtenerAlimentos);
 router.get('/listar', authControllers.obtenerDonantes);
-
+router.post('/locales', authControllers.registrarLocal);
 export default router;
