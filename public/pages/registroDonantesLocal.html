@@ -1,88 +1,152 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro de Local Externo</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-</head>
-<body>
-  <div class="container mt-5">
-    <h2 class="text-center">Registro de Donante - Local Externo</h2>
-    <form id="formLocalExterno" class="mt-4">
-      <!-- Tipo de usuario y donante -->
-      <input type="hidden" name="tipo_usuario" value="donante" />
-      <input type="hidden" name="tipo_donante" value="local_externo" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro de Local Externo</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">Registro de Donante - Local Externo</h2>
 
-      <!-- Usuario -->
-      <div class="mb-3">
-        <label for="correo" class="form-label">Correo electrónico</label>
-        <input type="email" class="form-control" id="correo" name="correo" required />
-      </div>
-      <div class="mb-3">
-        <label for="contrasena" class="form-label">Contraseña</label>
-        <input type="password" class="form-control" id="contrasena" name="contrasena" required />
-      </div>
+      <form id="formLocalExterno" novalidate>
+        <div class="row">
+          <div class="mb-3 col-md-6">
+            <label for="correo" class="form-label">Correo electrónico *</label>
+            <input type="email" class="form-control" id="correo" required />
+          </div>
+          <div class="mb-3 col-md-6">
+            <label for="contrasena" class="form-label">Contraseña *</label>
+            <input
+              type="password"
+              class="form-control"
+              id="contrasena"
+              required
+            />
+          </div>
+        </div>
 
-      <!-- Local -->
-      <div class="mb-3">
-        <label for="nombre_negocio" class="form-label">Nombre del Negocio</label>
-        <input type="text" class="form-control" id="nombre_negocio" name="nombre_negocio" required />
-      </div>
-      <div class="mb-3">
-        <label for="numero_local" class="form-label">Número de Local</label>
-        <input type="text" class="form-control" id="numero_local" name="numero_local" />
-      </div>
-      <div class="mb-3">
-        <label for="giro" class="form-label">Giro del Negocio</label>
-        <input type="text" class="form-control" id="giro" name="giro" />
-      </div>
-      <div class="mb-3">
-        <label for="tipo_local" class="form-label">Tipo de Local</label>
-        <select class="form-control" id="tipo_local" name="tipo_local" required>
-          <option value="">Selecciona una opción</option>
-          <option value="propio">Externo</option>
-          <option value="rentado">Interno</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="cedula_folio" class="form-label">Cédula o Folio</label>
-        <input type="text" class="form-control" id="cedula_folio" name="cedula_folio" />
-      </div>
-      <div class="mb-3">
-        <label for="rfc" class="form-label">RFC</label>
-        <input type="text" class="form-control" id="rfc" name="rfc" required />
-      </div>
+        <div class="mb-3">
+          <label for="nombre_negocio" class="form-label"
+            >Nombre del Negocio *</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="nombre_negocio"
+            required
+          />
+        </div>
 
-      <!-- Mercado -->
-      <div class="mb-3">
-        <label for="id_mercado" class="form-label">Mercado</label>
-        <select class="form-control" id="id_mercado" name="id_mercado" required>
-          <option value="">Selecciona un mercado</option>
-          <!-- Opciones dinámicas serán insertadas vía JS -->
-        </select>
-      </div>
+        <div class="row">
+          <div class="mb-3 col-md-6">
+            <label for="numero_local" class="form-label">Número de Local</label>
+            <input type="text" class="form-control" id="numero_local" />
+          </div>
+          <div class="mb-3 col-md-6">
+            <label for="giro" class="form-label">Giro del Negocio</label>
+            <input type="text" class="form-control" id="giro" />
+          </div>
+        </div>
 
-      <button type="submit" class="btn btn-primary w-100">Registrar Donante</button>
-    </form>
-  </div>
+        <div class="mb-3">
+          <label for="tipo_local" class="form-label">Tipo de Local *</label>
+          <select class="form-select" id="tipo_local" required>
+            <option value="">Selecciona una opción</option>
+            <option value="externo">Externo</option>
+            <option value="interno">Interno</option>
+          </select>
+        </div>
 
-  <script>
-    // Cargar mercados dinámicamente
-    document.addEventListener("DOMContentLoaded", () => {
-      fetch("/api/mercados")
-        .then(res => res.json())
-        .then(data => {
-          const select = document.getElementById("id_mercado");
-          data.forEach(mercado => {
-            const option = document.createElement("option");
-            option.value = mercado.id_mercado;
-            option.textContent = mercado.nombre;
-            select.appendChild(option);
-          });
-        })
-        .catch(error => console.error("Error al cargar mercados:", error));
-    });
-  </script>
-</body>
+        <div class="mb-3">
+          <label for="cedula_folio" class="form-label">Cédula o Folio</label>
+          <input type="text" class="form-control" id="cedula_folio" />
+        </div>
+
+        <div class="row">
+          <div class="mb-3 col-md-6">
+            <label for="rfc" class="form-label">RFC *</label>
+            <input type="text" class="form-control" id="rfc" required />
+          </div>
+          <div class="mb-3 col-md-6">
+            <label for="id_mercado" class="form-label">Mercado *</label>
+            <select class="form-select" id="id_mercado" required>
+              <option value="">Selecciona un mercado</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+          Registrar Donante
+        </button>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        fetch("/listarMercados")
+          .then((res) => res.json())
+          .then((data) => {
+            const select = document.getElementById("id_mercado");
+            data
+              .sort((a, b) => a.nombre.localeCompare(b.nombre))
+              .forEach((mercado) => {
+                const option = document.createElement("option");
+                option.value = mercado.id;
+                option.textContent = mercado.nombre;
+                select.appendChild(option);
+              });
+          })
+          .catch((error) => console.error("Error al cargar mercados:", error));
+      });
+
+      document
+        .getElementById("formLocalExterno")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const submitBtn = document.getElementById("submitBtn");
+          submitBtn.disabled = true;
+
+          const datos = {
+            correo: document.getElementById("correo").value.trim(),
+            contrasena: document.getElementById("contrasena").value.trim(),
+            nombre_negocio: document
+              .getElementById("nombre_negocio")
+              .value.trim(),
+            numero_local: document.getElementById("numero_local").value.trim(),
+            giro: document.getElementById("giro").value.trim(),
+            tipo_local: document.getElementById("tipo_local").value,
+            cedula_folio: document.getElementById("cedula_folio").value.trim(),
+            rfc: document.getElementById("rfc").value.trim(),
+            id_mercado: document.getElementById("id_mercado").value,
+          };
+
+          try {
+            const res = await fetch("/locales", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(datos),
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+              alert("Donante registrado exitosamente");
+              window.location.href = "../index.html";
+            } else {
+              alert(result.message || "Error al registrar el donante.");
+              submitBtn.disabled = false;
+            }
+          } catch (err) {
+            console.error("Error:", err);
+            alert("Error al conectar con el servidor.");
+            submitBtn.disabled = false;
+          }
+        });
+    </script>
+  </body>
 </html>

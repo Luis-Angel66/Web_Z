@@ -1,51 +1,62 @@
-import { Sequelize } from 'sequelize';
-import conn from '../config/database.js'; 
+import { Sequelize } from "sequelize";
+import conn from "../config/database.js";
 
-export const insertarUsuario = async ({ correo, password, tipo_usuario }, t) => {
+export const insertarUsuario = async (
+  { correo, password, tipo_usuario },
+  t
+) => {
+  const estatus = 1;
   const [resultado] = await conn.query(
-    `INSERT INTO usuarios (correo, contrasena, tipo_usuario) 
-     VALUES (?, ?, ?)`,
+    `INSERT INTO usuarios (correo, contrasena, tipo_usuario, estatus) 
+     VALUES (?, ?, ?, ?)`,
     {
-      replacements: [correo, password, tipo_usuario],
+      replacements: [correo, password, tipo_usuario, estatus],
       type: Sequelize.QueryTypes.INSERT,
-      transaction: t
+      transaction: t,
     }
   );
 
   return {
-    id: resultado, 
+    id: resultado,
     correo,
     password,
-    tipo_usuario
+    tipo_usuario,
+    estatus,
   };
 };
 
-export const insertarBeneficiario = async ({ usuario_id, tipoBeneficiario}, t) => {
+export const insertarBeneficiario = async (
+  { usuario_id, tipoBeneficiario },
+  t
+) => {
   const [resultado] = await conn.query(
     `INSERT INTO beneficiarios (usuario_id, tipo) 
      VALUES (?, ?)`,
     {
-      replacements: [usuario_id,tipoBeneficiario],
+      replacements: [usuario_id, tipoBeneficiario],
       type: Sequelize.QueryTypes.INSERT,
-      transaction: t
+      transaction: t,
     }
   );
 
   return {
     id: resultado,
     usuario_id,
-    tipoBeneficiario
+    tipoBeneficiario,
   };
 };
 
-export const insertarCiudadano = async ({ beneficiario_id,nombre, calle, colonia, alcaldia, numINE }, t) => {
+export const insertarCiudadano = async (
+  { beneficiario_id, nombre, calle, colonia, alcaldia, numINE },
+  t
+) => {
   const [resultado] = await conn.query(
     `INSERT INTO ciudadanos (beneficiario_id,nombre, calle, colonia, alcaldia, numero_ident) 
      VALUES (?, ?, ?, ?, ?, ?)`,
     {
-      replacements: [beneficiario_id,nombre, calle, colonia, alcaldia, numINE],
+      replacements: [beneficiario_id, nombre, calle, colonia, alcaldia, numINE],
       type: Sequelize.QueryTypes.INSERT,
-      transaction: t
+      transaction: t,
     }
   );
 
@@ -56,19 +67,39 @@ export const insertarCiudadano = async ({ beneficiario_id,nombre, calle, colonia
     calle,
     colonia,
     alcaldia,
-    numINE
+    numINE,
   };
 };
 
-
-export const insertarInstitucion = async ({ beneficiario_id, nombre, rfc, folio_acta, nombre_contacto,  calle, colonia, alcaldia }, t) => {
+export const insertarInstitucion = async (
+  {
+    beneficiario_id,
+    nombre,
+    rfc,
+    folio_acta,
+    nombre_contacto,
+    calle,
+    colonia,
+    alcaldia,
+  },
+  t
+) => {
   const [resultado] = await conn.query(
     `INSERT INTO instituciones (beneficiario_id, nombre, rfc, folio_acta, calle, colonia, alcaldia, nombre_contacto) 
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     {
-      replacements: [beneficiario_id, nombre, rfc, folio_acta, calle, colonia, alcaldia, nombre_contacto],
+      replacements: [
+        beneficiario_id,
+        nombre,
+        rfc,
+        folio_acta,
+        calle,
+        colonia,
+        alcaldia,
+        nombre_contacto,
+      ],
       type: Sequelize.QueryTypes.INSERT,
-      transaction: t
+      transaction: t,
     }
   );
 
@@ -79,16 +110,15 @@ export const insertarInstitucion = async ({ beneficiario_id, nombre, rfc, folio_
     rfc,
     folio_acta,
     nombre_contacto,
-    
+
     calle,
     colonia,
-    alcaldia
+    alcaldia,
   };
-}
+};
 
-
-export const insertarDonante = async (usuario_id,tipo, transaction) => {
-  await conn.query(
+export const insertarDonante = async ({ usuario_id, tipo }, transaction) => {
+  const [resultado] = await conn.query(
     `INSERT INTO donantes (usuario_id, tipo) VALUES (?, ?)`,
     {
       replacements: [usuario_id, tipo],
@@ -96,18 +126,11 @@ export const insertarDonante = async (usuario_id,tipo, transaction) => {
       transaction,
     }
   );
-};
-
-// Obtiene el ID del último insert
-export const obtenerUltimoIdInsertado = async (transaction) => {
-  const [result] = await conn.query(
-    `SELECT LAST_INSERT_ID() AS id`,
-    {
-      type: Sequelize.QueryTypes.SELECT,
-      transaction,
-    }
-  );
-  return result;
+  return {
+    id: resultado,
+    usuario_id,
+    tipo,
+  };
 };
 
 // Inserta un local
@@ -119,13 +142,13 @@ export const insertarLocal = async (
   tipo_local,
   cedula_folio,
   id_mercado,
-  transaction,
-  rfc
+  rfc,
+  transaction
 ) => {
   await conn.query(
     `INSERT INTO locales 
      (donante_id, mercado_id, numero_local, nombre_negocio, giro, tipo_local, cedula_folio,rfc) 
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?,?)`,
     {
       replacements: [
         id_donantes,
@@ -135,8 +158,7 @@ export const insertarLocal = async (
         giro || null,
         tipo_local || null,
         cedula_folio || null,
-        rfc || null
-        
+        rfc || null,
       ],
       type: Sequelize.QueryTypes.INSERT,
       transaction,
@@ -144,3 +166,45 @@ export const insertarLocal = async (
   );
 };
 
+export const insertarMercado = async (
+  {
+    donante_id,
+    nombre,
+    calle,
+    colonia,
+    alcaldia,
+    rfc,
+    numeroLocales,
+    nombre_admin,
+    correo_admin,
+  },
+  transaction
+) => {
+  const [resultado] = await conn.query(
+    `INSERT INTO mercados (donante_id, nombre, calle, colonia, alcaldia, rfc, numero_locales, nombre_admin, correo_admin) 
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    {
+      replacements: [
+        donante_id,
+        nombre,
+        calle,
+        colonia,
+        alcaldia,
+        rfc,
+        numeroLocales,
+        nombre_admin,
+        correo_admin,
+      ],
+      type: Sequelize.QueryTypes.INSERT,
+      transaction,
+    }
+  );
+
+  return {
+    id: resultado,
+    nombre,
+    calle,
+    colonia,
+    alcaldia,
+  };
+};
